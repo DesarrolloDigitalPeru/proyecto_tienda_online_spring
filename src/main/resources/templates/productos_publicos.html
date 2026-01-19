@@ -5,6 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>PlazaChina - Productos</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Font Awesome para íconos -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <!-- Usa solo Bootstrap Icons, elimina FontAwesome si ya no lo usas -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
     <style>
@@ -16,6 +18,9 @@
         }
         .card-shadow {
             box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+        }
+        .rotate-180 {
+            transform: rotate(180deg);
         }
     </style>
 </head>
@@ -85,55 +90,62 @@
             </form>
         </div>
 
-        <div th:if="${#lists.isEmpty(productos)}" class="text-center text-gray-600 text-xl py-10">
+        <div th:if="${#maps.isEmpty(productosAgrupados)}" class="text-center text-gray-600 text-xl py-10">
             No se encontraron productos con los criterios de búsqueda.
         </div>
-          <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-          <div th:each="producto : ${productos}" class="bg-white rounded-2xl overflow-hidden card-shadow hover:shadow-xl transition-shadow duration-300 ease-in-out product-item"
-              th:data-nombre="${producto.nombre}"
-              th:data-descripcion="${producto.descripcion}"
-              th:data-categoria="${producto.categoria}"
-              th:data-genero="${producto.genero}"
-              th:data-talla="${producto.talla}">
-                <img th:src="${producto.imagenUrl != null and producto.imagenUrl != '' ? producto.imagenUrl : 'https://placehold.co/400x300/E0E0E0/6A11CB?text=Producto'}"
-                     alt="Imagen del producto" class="w-full h-48 object-cover object-center">
-                <div class="p-5">
-                    <h3 class="text-xl font-semibold text-gray-800 mb-2" th:text="${producto.nombre}">Nombre del Producto</h3>
-                    <p class="text-gray-600 text-sm mb-3" th:text="${producto.categoria} + ' - ' + ${producto.genero} + ' - Talla: ' + ${producto.talla}">Categoría - Género - Talla</p>
+        <div th:each="entry : ${productosAgrupados}" class="mb-8">
+            <div class="categoria-header bg-gradient-to-r from-orange-500 to-red-500 text-white p-4 rounded-t-lg cursor-pointer flex items-center gap-3" th:data-categoria="${entry.key}">
+                <i th:class="'fas ' + ${iconos[entry.key]}" class="text-2xl"></i>
+                <h3 class="text-xl font-bold" th:text="${entry.key}"></h3>
+                <i class="fas fa-chevron-down ml-auto transition-transform chevron-icon"></i>
+            </div>
+            <div class="categoria-content grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 p-4 bg-gray-50 rounded-b-lg">
+                <div th:each="producto : ${entry.value}" class="bg-white rounded-2xl overflow-hidden card-shadow hover:shadow-xl transition-shadow duration-300 ease-in-out product-item"
+                     th:data-nombre="${producto.nombre}"
+                     th:data-descripcion="${producto.descripcion}"
+                     th:data-categoria="${producto.categoria.descripcion}"
+                     th:data-genero="${producto.genero}"
+                     th:data-talla="${producto.talla}">
+                    <img th:src="${producto.imagenUrl != null and producto.imagenUrl != '' ? producto.imagenUrl : 'https://placehold.co/400x300/E0E0E0/6A11CB?text=Producto'}"
+                         alt="Imagen del producto" class="w-full h-48 object-cover object-center">
+                    <div class="p-5">
+                        <h3 class="text-xl font-semibold text-gray-800 mb-2" th:text="${producto.nombre}">Nombre del Producto</h3>
+                        <p class="text-gray-600 text-sm mb-3" th:text="${producto.categoria.descripcion} + ' - ' + ${producto.genero} + ' - Talla: ' + ${producto.talla}">Categoría - Género - Talla</p>
 
-                    <div class="flex items-baseline mb-3">
-                        <span th:if="${producto.descuento > 0}" class="text-red-500 font-bold text-lg mr-2"
-                              th:text="'S/ ' + ${#numbers.formatDecimal(producto.precio * (1 - producto.descuento/100), 1, 'COMMA', 2, 'POINT')}">S/ XX.XX</span>
-                        <span th:classappend="${producto.descuento > 0 ? 'line-through text-gray-500 text-sm' : 'text-blue-700 font-bold text-xl'}"
-                              th:text="'S/ ' + ${#numbers.formatDecimal(producto.precio, 1, 'COMMA', 2, 'POINT')}">S/ XX.XX</span>
-                        <span th:if="${producto.descuento > 0}" class="ml-2 bg-red-100 text-red-800 text-xs font-semibold px-2.5 py-0.5 rounded-full"
-                              th:text="${#numbers.formatDecimal(producto.descuento, 0, 0) + '% OFF'}">XX% OFF</span>
-                    </div>
+                        <div class="flex items-baseline mb-3">
+                            <span th:if="${producto.descuento > 0}" class="text-red-500 font-bold text-lg mr-2"
+                                  th:text="'S/ ' + ${#numbers.formatDecimal(producto.precio * (1 - producto.descuento/100), 1, 'COMMA', 2, 'POINT')}">S/ XX.XX</span>
+                            <span th:classappend="${producto.descuento > 0 ? 'line-through text-gray-500 text-sm' : 'text-blue-700 font-bold text-xl'}"
+                                  th:text="'S/ ' + ${#numbers.formatDecimal(producto.precio, 1, 'COMMA', 2, 'POINT')}">S/ XX.XX</span>
+                            <span th:if="${producto.descuento > 0}" class="ml-2 bg-red-100 text-red-800 text-xs font-semibold px-2.5 py-0.5 rounded-full"
+                                  th:text="${#numbers.formatDecimal(producto.descuento, 0, 0) + '% OFF'}">XX% OFF</span>
+                        </div>
 
-                    <p th:classappend="${producto.stock > 0 ? 'text-green-600' : 'text-red-600'}" class="text-sm font-medium mb-4">
-                        Stock: <span th:text="${producto.stock}"></span>
-                        <span th:if="${producto.stock == 0}" class="ml-1">(Agotado)</span>
-                    </p>
+                        <p th:classappend="${producto.stock > 0 ? 'text-green-600' : 'text-red-600'}" class="text-sm font-medium mb-4">
+                            Stock: <span th:text="${producto.stock}"></span>
+                            <span th:if="${producto.stock == 0}" class="ml-1">(Agotado)</span>
+                        </p>
 
-                    <div class="flex flex-col space-y-3">
-                        <button class="bg-gray-300 text-gray-700 font-bold py-2 px-4 rounded-xl cursor-not-allowed opacity-70" disabled>
-                            Agregar al Carrito
-                        </button>
-                        <button onclick="showProductDetailsModal(this)"
-                                th:data-id="${producto.id}"
-                                th:data-nombre="${producto.nombre}"
-                                th:data-descripcion="${producto.descripcion}"
-                                th:data-categoria="${producto.categoria}"
-                                th:data-genero="${producto.genero}"
-                                th:data-talla="${producto.talla}"
-                                th:data-precio="${producto.precio}"
-                                th:data-descuento="${producto.descuento}"
-                                th:data-stock="${producto.stock}"
-                                th:data-imagenurl="${producto.imagenUrl}"
-                                th:data-tela="${producto.tela}"
-                                class="bg-orange-600 hover:bg-orange-700 text-white font-bold py-2 px-4 rounded-xl transition duration-300 ease-in-out transform hover:scale-105">
-                            Ver más detalles
-                        </button>
+                        <div class="flex flex-col space-y-3">
+                            <button class="bg-gray-300 text-gray-700 font-bold py-2 px-4 rounded-xl cursor-not-allowed opacity-70" disabled>
+                                Agregar al Carrito
+                            </button>
+                            <button onclick="showProductDetailsModal(this)"
+                                    th:data-id="${producto.id}"
+                                    th:data-nombre="${producto.nombre}"
+                                    th:data-descripcion="${producto.descripcion}"
+                                    th:data-categoria="${producto.categoria.descripcion}"
+                                    th:data-genero="${producto.genero}"
+                                    th:data-talla="${producto.talla}"
+                                    th:data-precio="${producto.precio}"
+                                    th:data-descuento="${producto.descuento}"
+                                    th:data-stock="${producto.stock}"
+                                    th:data-imagenurl="${producto.imagenUrl}"
+                                    th:data-tela="${producto.tela}"
+                                    class="bg-orange-600 hover:bg-orange-700 text-white font-bold py-2 px-4 rounded-xl transition duration-300 ease-in-out transform hover:scale-105">
+                                Ver más detalles
+                            </button>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -331,6 +343,20 @@
                 }
             });
 
+            // Ocultar categorías sin productos visibles
+            const categorias = document.querySelectorAll('.categoria-content');
+            categorias.forEach(cat => {
+                const visibles = cat.querySelectorAll('.product-item:not([style*="display: none"])');
+                const header = cat.previousElementSibling;
+                if (visibles.length === 0) {
+                    cat.classList.add('hidden');
+                    header.classList.add('hidden');
+                } else {
+                    cat.classList.remove('hidden');
+                    header.classList.remove('hidden');
+                }
+            });
+
             populateSuggestions(matchesForSuggestions.slice(0, 6), q);
         }
 
@@ -363,6 +389,18 @@
             el.classList.add('ring-4', 'ring-orange-300');
             setTimeout(() => el.classList.remove('ring-4', 'ring-orange-300'), 1600);
         }
+
+        document.addEventListener('DOMContentLoaded', function() {
+            const headers = document.querySelectorAll('.categoria-header');
+            headers.forEach(header => {
+                header.addEventListener('click', function() {
+                    const content = this.nextElementSibling;
+                    const chevron = this.querySelector('.chevron-icon');
+                    content.classList.toggle('hidden');
+                    chevron.classList.toggle('rotate-180');
+                });
+            });
+        });
 
         const debouncedFilter = debounce(function() {
             const val = searchInput.value || '';
