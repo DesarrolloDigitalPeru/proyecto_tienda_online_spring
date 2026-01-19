@@ -74,10 +74,25 @@ public class LoginController {
      * @param session La sesión HTTP a invalidar.
      * @return Una redirección a la página de inicio.
      */
-    @GetMapping("/logout")
-    public String logout(HttpSession session) {
+    @PostMapping("/logout")
+    public String logout(HttpSession session, jakarta.servlet.http.HttpServletResponse response) {
+        // Limpiar atributos específicos antes de invalidar
+        session.removeAttribute("usuarioLogueado");
+        
         // Invalidar la sesión manualmente
         session.invalidate();
-        return "redirect:/";
+        
+        // Agregar headers para evitar caché
+        response.setHeader("Cache-Control", "no-cache, no-store, must-revalidate");
+        response.setHeader("Pragma", "no-cache");
+        response.setDateHeader("Expires", 0);
+        
+        return "redirect:/login?logout";
+    }
+    
+    // Mantener GET para compatibilidad, pero redirigir a login
+    @GetMapping("/logout")
+    public String logoutGet() {
+        return "redirect:/login";
     }
 }
