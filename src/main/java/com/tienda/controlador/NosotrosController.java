@@ -1,7 +1,6 @@
 // Paquete donde se ubicarán tus controladores
 package com.tienda.controlador;
 
-import jakarta.servlet.http.HttpSession;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -17,9 +16,9 @@ public class NosotrosController {
      * @return El nombre de la plantilla Thymeleaf para la página "Nosotros".
      */
     @GetMapping("/nosotros")
-    public String showNosotros(Model model, HttpSession session) {
+    public String showNosotros(Model model) {
         // Obtener la cantidad de ítems en el carrito para la navbar (si el usuario está logueado)
         model.addAttribute("carritoCount", 0);
         return "nosotros"; // Esto buscará src/main/resources/templates/nosotros.html
     }
-}
+}   

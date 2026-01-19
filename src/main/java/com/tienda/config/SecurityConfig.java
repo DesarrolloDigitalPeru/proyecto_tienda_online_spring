@@ -63,7 +63,7 @@ public class SecurityConfig {
                 .authenticationProvider(authenticationProvider(userDetailsService()))
                 .authorizeHttpRequests(authorize -> authorize
                         // Rutas públicas accesibles por cualquiera
-                        .requestMatchers("/", "/login", "/registro", "/productos-publicos", "/images/**", "/css/**", "/js/**").permitAll()
+                        .requestMatchers("/", "/login", "/registro", "/productos-publicos", "/nosotros", "/images/**", "/css/**", "/js/**").permitAll()
                         // Rutas que requieren el rol de ADMIN
                         .requestMatchers("/admin/**").hasRole("ADMIN")
                         // Todas las demás rutas requieren autenticación
