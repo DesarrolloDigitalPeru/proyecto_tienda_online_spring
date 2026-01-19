@@ -9,7 +9,9 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -65,21 +67,44 @@ public class ProductoPublicoController {
         }
 
         Set<String> categoriasUnicas = productoService.findAllProductos().stream()
+                .filter(p -> p.getCategoria() != null)
                 .map(p -> p.getCategoria().getDescripcion())
                 .filter(c -> c != null && !c.isEmpty())
                 .collect(Collectors.toSet());
 
         Set<String> generosUnicos = productoService.findAllProductos().stream()
+                .filter(p -> p.getGenero() != null)
                 .map(Producto::getGenero)
                 .filter(g -> g != null && !g.isEmpty())
                 .collect(Collectors.toSet());
 
         Set<String> tallasUnicas = productoService.findAllProductos().stream()
+                .filter(p -> p.getTalla() != null)
                 .map(Producto::getTalla)
                 .filter(t -> t != null && !t.isEmpty())
                 .collect(Collectors.toSet());
 
+        Map<String, List<Producto>> productosAgrupados = productos.stream()
+                .filter(p -> p.getCategoria() != null)
+                .collect(Collectors.groupingBy(p -> p.getCategoria().getDescripcion()));
+
+        Map<String, String> iconos = new HashMap<>();
+        iconos.put("Higiene y cuidado personal", "fa-soap");
+        iconos.put("Limpieza del hogar", "fa-broom");
+        iconos.put("Snacks y golosinas", "fa-cookie-bite");
+        iconos.put("Bebés y maternidad", "fa-baby");
+        iconos.put("Electrónica y accesorios", "fa-mobile-alt");
+        iconos.put("Ropa y accesorios", "fa-tshirt");
+        iconos.put("Belleza", "fa-spa");
+        iconos.put("Cocina y hogar", "fa-utensils");
+        iconos.put("Bebidas", "fa-glass-whiskey");
+        iconos.put("Abarrotes básicos", "fa-shopping-basket");
+        iconos.put("Tecnología básica", "fa-laptop");
+        iconos.put("Manualidades y arte", "fa-palette");
+
         model.addAttribute("productos", productos);
+        model.addAttribute("productosAgrupados", productosAgrupados);
+        model.addAttribute("iconos", iconos);
         model.addAttribute("categorias", categoriasUnicas);
         model.addAttribute("generos", generosUnicos);
         model.addAttribute("tallas", tallasUnicas);
