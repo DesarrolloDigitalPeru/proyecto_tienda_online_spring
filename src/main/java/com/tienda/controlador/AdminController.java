@@ -3,7 +3,6 @@ package com.tienda.controlador;
 import com.tienda.modelo.Usuario;
 import com.tienda.modelo.Pago;
 import com.tienda.servicio.PagoService;
-import com.tienda.servicio.ProductoService;
 import jakarta.servlet.http.HttpSession;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
@@ -20,9 +19,6 @@ public class AdminController {
 
     @Autowired
     private PagoService pagoService;
-
-    @Autowired
-    private ProductoService productoService;
 
     @GetMapping("/admin/bienvenida")
     public String bienvenidaAdmin(Model model, HttpSession session) {
@@ -71,6 +67,6 @@ public class AdminController {
                 .collect(java.util.stream.Collectors.toList());
         model.addAttribute("ultimasVentas", ultimasVentas);
 
-        return "admin_bienvenida";
+        return "admin/bienvenida";
     }
 }
