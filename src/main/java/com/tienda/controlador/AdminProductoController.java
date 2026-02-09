@@ -72,6 +72,29 @@ public class AdminProductoController {
         }
     }
 
+    @DeleteMapping("/productos/eliminar/{id}")
+    @ResponseBody // Indica que el método devuelve directamente el cuerpo de la respuesta (JSON)
+    public ResponseEntity<Map<String, Object>> eliminarProducto(@PathVariable Long id) {
+        Map<String, Object> response = new HashMap<>();
+        try {
+            Optional<Producto> productoOptional = productoService.findProductoById(id);
+            if (productoOptional.isEmpty()) {
+                response.put("success", false);
+                response.put("message", "Producto no encontrado.");
+                return new ResponseEntity<>(response, HttpStatus.NOT_FOUND);
+            }
+            productoService.deleteProducto(id);
+            response.put("success", true);
+            response.put("message", "Producto eliminado exitosamente.");
+            return new ResponseEntity<>(response, HttpStatus.OK);
+        } catch (Exception e) {
+            System.err.println("Error al eliminar producto: " + e.getMessage());
+            response.put("success", false);
+            response.put("message", "Error interno al eliminar el producto.");
+            return new ResponseEntity<>(response, HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
+
 
 
 }

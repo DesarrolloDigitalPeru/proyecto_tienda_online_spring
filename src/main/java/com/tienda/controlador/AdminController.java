@@ -2,12 +2,17 @@ package com.tienda.controlador;
 
 import com.tienda.modelo.Usuario;
 import com.tienda.modelo.Pago;
+import com.tienda.modelo.Producto;
 import com.tienda.servicio.PagoService;
+import com.tienda.servicio.ProductoService;
 import jakarta.servlet.http.HttpSession;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -19,6 +24,9 @@ public class AdminController {
 
     @Autowired
     private PagoService pagoService;
+
+    @Autowired
+    private ProductoService productoService;
 
     @GetMapping("/admin/bienvenida")
     public String bienvenidaAdmin(Model model, HttpSession session) {
@@ -69,4 +77,8 @@ public class AdminController {
 
         return "admin/bienvenida";
     }
+
+   
+
+    
 }
