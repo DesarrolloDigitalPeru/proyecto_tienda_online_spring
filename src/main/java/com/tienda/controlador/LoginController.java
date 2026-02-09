@@ -11,7 +11,6 @@ import org.springframework.web.bind.annotation.RequestParam; // Se mantiene por 
 
 @Controller
 public class LoginController {
-
     /**
      * Muestra la página de login.
      * @param model El objeto Model para pasar datos a la vista.
