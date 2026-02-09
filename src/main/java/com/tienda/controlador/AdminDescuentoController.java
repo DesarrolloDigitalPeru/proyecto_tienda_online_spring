@@ -103,4 +103,28 @@ public class AdminDescuentoController {
             return new ResponseEntity<>(response, HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
+
+    /**
+     * Obtiene los principales productos con descuentos activos.
+     * Este endpoint es llamado vía AJAX para mostrar un modal con highlights de descuentos.
+     * @return Una lista de productos con descuentos mayores a 0, limitada a los 5 principales (por descuento mayor).
+     */
+    @GetMapping("/descuentos/principales")
+    @ResponseBody
+    public ResponseEntity<List<Producto>> getPrincipalesDescuentos() {
+        try {
+            List<Producto> productos = productoService.findAllProductos();
+            // Filtrar productos con descuento > 0 y ordenar por descuento descendente
+            List<Producto> productosConDescuento = productos.stream()
+                .filter(p -> p.getDescuento() != null && p.getDescuento().doubleValue() > 0)
+                .sorted((p1, p2) -> p2.getDescuento().compareTo(p1.getDescuento()))
+                .limit(5)
+                .toList();
+            
+            return new ResponseEntity<>(productosConDescuento, HttpStatus.OK);
+        } catch (Exception e) {
+            System.err.println("Error al obtener descuentos principales: " + e.getMessage());
+            return new ResponseEntity<>(List.of(), HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
 }

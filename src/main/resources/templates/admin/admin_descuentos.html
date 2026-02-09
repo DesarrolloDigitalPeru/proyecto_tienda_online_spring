@@ -149,6 +149,28 @@
         </div>
     </div>
 
+    <!-- Modal de Productos con Descuentos Principales -->
+    <div id="discountsHighlightsModal" class="fixed inset-0 bg-gray-800 bg-opacity-75 flex items-center justify-center z-50 hidden">
+        <div class="bg-white p-8 rounded-2xl shadow-xl max-w-2xl w-full mx-4">
+            <div class="flex justify-between items-center mb-6">
+                <h2 class="text-2xl font-bold text-gray-800">
+                    <i class="fas fa-star text-yellow-500 mr-2"></i> Productos Principales en Descuento
+                </h2>
+                <button onclick="closeDiscountsHighlightsModal()" class="text-gray-500 hover:text-gray-800 text-2xl font-bold">&times;</button>
+            </div>
+            
+            <div id="discountsHighlightsList" class="space-y-4">
+                <!-- Se llenará dinámicamente -->
+            </div>
+            
+            <div class="mt-6 text-center">
+                <button onclick="closeDiscountsHighlightsModal()" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-6 rounded-lg">
+                    Entendido
+                </button>
+            </div>
+        </div>
+    </div>
+
     <footer class="bg-gray-800 text-white text-center p-4 mt-8">
         <p>&copy; 2025 PlazaChina. Todos los derechos reservados.</p>
     </footer>
@@ -170,15 +192,57 @@
             document.getElementById('messageModal').classList.add('hidden');
         }
 
-        // Cierra el modal de mensajes si se hace clic fuera de él
+        // Funciones para el modal de descuentos principales
+        function showDiscountsHighlightsModal(products) {
+            const modal = document.getElementById('discountsHighlightsModal');
+            const listContainer = document.getElementById('discountsHighlightsList');
+            
+            if (!products || products.length === 0) {
+                listContainer.innerHTML = '<p class="text-gray-600 text-center py-4">No hay productos con descuentos actualmente.</p>';
+            } else {
+                listContainer.innerHTML = products.map(p => `
+                    <div class="bg-gradient-to-r from-orange-50 to-yellow-50 p-4 rounded-lg border-2 border-orange-200">
+                        <div class="flex items-center justify-between">
+                            <div class="flex items-center gap-4">
+                                <img src="${p.imagenUrl && p.imagenUrl !== 'null' ? p.imagenUrl : 'https://placehold.co/60x60/E0E0E0/6A11CB?text=Producto'}" 
+                                     alt="${p.nombre}" class="w-16 h-16 object-cover rounded-lg">
+                                <div>
+                                    <h4 class="font-bold text-gray-800">${p.nombre}</h4>
+                                    <p class="text-sm text-gray-600">Precio base: <span class="font-semibold">S/ ${parseFloat(p.precio).toFixed(2)}</span></p>
+                                </div>
+                            </div>
+                            <div class="text-right">
+                                <div class="bg-red-500 text-white px-3 py-1 rounded-full font-bold text-lg">
+                                    -${p.descuento}%
+                                </div>
+                                <p class="text-sm text-green-700 font-bold mt-1">S/ ${(p.precio * (1 - p.descuento/100)).toFixed(2)}</p>
+                            </div>
+                        </div>
+                    </div>
+                `).join('');
+            }
+            
+            modal.classList.remove('hidden');
+        }
+
+        function closeDiscountsHighlightsModal() {
+            document.getElementById('discountsHighlightsModal').classList.add('hidden');
+        }
+
+        // Cierra los modales si se hace clic fuera de ellos
         window.onclick = function(event) {
             const messageModal = document.getElementById('messageModal');
             const discountModal = document.getElementById('discountModal');
+            const discountsHighlightsModal = document.getElementById('discountsHighlightsModal');
+            
             if (event.target == messageModal) {
                 hideMessageModal();
             }
             if (event.target == discountModal) {
                 closeDiscountModal();
+            }
+            if (event.target == discountsHighlightsModal) {
+                closeDiscountsHighlightsModal();
             }
         }
 
@@ -238,16 +302,34 @@
             }
         }
 
+        // Obtener productos con descuentos principales al cargar la página
+        async function loadDiscountHighlights() {
+            try {
+                const response = await fetch('/admin/descuentos/principales');
+                if (response.ok) {
+                    const products = await response.json();
+                    if (products && products.length > 0) {
+                        showDiscountsHighlightsModal(products);
+                    }
+                }
+            } catch (error) {
+                console.error('Error al cargar descuentos principales:', error);
+            }
+        }
+
         // Si hay un mensaje flash de éxito o error, mostrarlo
         window.onload = function() {
-            const successMessage = "[[${successMessage}]]";
-            const errorMessage = "[[${errorMessage}]]";
+            const successMessage = /*[[${successMessage}]]*/ null;
+            const errorMessage = /*[[${errorMessage}]]*/ null;
 
             if (successMessage && successMessage !== '') {
                 showMessageModal(successMessage, true);
             } else if (errorMessage && errorMessage !== '') {
                 showMessageModal(errorMessage, false);
             }
+            
+            // Cargar y mostrar descuentos principales
+            loadDiscountHighlights();
         };
         /*]]>*/
     </script>
