@@ -59,7 +59,25 @@
     </header>
 
     <main class="flex-grow container mx-auto p-4 md:p-8">
-        
+        <section class="mb-10">
+            <h2 class="text-3xl font-semibold text-gray-800 mb-6">Resumen de Ventas y Productos</h2>
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                <div class="chart-container">
+                    <h3 class="text-xl font-semibold text-gray-700 mb-4">Ventas Diarias (Últimos 7 Días)</h3>
+                    <svg id="dailySalesChart" class="chart-svg"></svg>
+                </div>
+
+                <div class="chart-container">
+                    <h3 class="text-xl font-semibold text-gray-700 mb-4">Ventas Mensuales (Año Actual)</h3>
+                    <svg id="monthlySalesChart" class="chart-svg"></svg>
+                </div>
+
+                <div class="chart-container lg:col-span-2">
+                    <h3 class="text-xl font-semibold text-gray-700 mb-4">Productos Más Vendidos (Top 5)</h3>
+                    <svg id="mostSoldProductsChart" class="chart-svg"></svg>
+                </div>
+            </div>
+        </section>
 
         <section class="mb-10">
             <h2 class="text-3xl font-semibold text-gray-800 mb-6">Últimas Ventas</h2>
@@ -94,6 +112,282 @@
         <p>&copy; 2025 PlazaChina. Todos los derechos reservados.</p>
     </footer>
 
-    
+    <script th:inline="javascript">
+        /*<![CDATA[*/
+        // Datos para gráficos
+        const dailySalesData = /*[[${salesByDay}]]*/ {};
+        const monthlySalesData = /*[[${salesByMonth}]]*/ {};
+        const mostSoldProductsData = /*[[${mostSoldProducts}]]*/ [];
+
+        // Función para dibujar el gráfico de ventas diarias (Barras)
+        function drawDailySalesChart() {
+            const data = Object.entries(dailySalesData).map(([date, amount]) => ({
+                date: new Date(date),
+                amount: amount
+            }));
+
+            // Si no hay datos, mostrar mensaje de referencia
+            if (true) {
+                const svg = d3.select("#dailySalesChart");
+                const width = document.getElementById('dailySalesChart').clientWidth;
+                const height = document.getElementById('dailySalesChart').clientHeight;
+                
+                svg.attr("viewBox", `0 0 ${width} ${height}`);
+                svg.append("rect")
+                    .attr("width", width)
+                    .attr("height", height)
+                    .attr("fill", "#f9fafb");
+                
+                svg.append("text")
+                    .attr("x", width / 2)
+                    .attr("y", height / 2)
+                    .attr("text-anchor", "middle")
+                    .attr("dy", ".3em")
+                    .style("font-size", "16px")
+                    .style("fill", "#666")
+                    .text("No hay datos de ventas diarias");
+                    
+                svg.append("text")
+                    .attr("x", width / 2)
+                    .attr("y", height / 2 + 30)
+                    .attr("text-anchor", "middle")
+                    .style("font-size", "12px")
+                    .style("fill", "#999")
+                    .text("Los gráficos aparecerán cuando haya ventas");
+                return;
+            }
+
+            const margin = { top: 20, right: 30, bottom: 40, left: 50 };
+            const width = document.getElementById('dailySalesChart').clientWidth - margin.left - margin.right;
+            const height = document.getElementById('dailySalesChart').clientHeight - margin.top - margin.bottom;
+
+            const svg = d3.select("#dailySalesChart")
+                .attr("viewBox", `0 0 ${width + margin.left + margin.right} ${height + margin.top + margin.bottom}`)
+                .append("g")
+                .attr("transform", `translate(${margin.left},${margin.top})`);
+
+            const x = d3.scaleBand()
+                .range([0, width])
+                .domain(data.map(d => d.date.toLocaleDateString('es-ES', { day: '2-digit', month: '2-digit' })))
+                .padding(0.2);
+
+            svg.append("g")
+                .attr("transform", `translate(0,${height})`)
+                .call(d3.axisBottom(x))
+                .selectAll("text")
+                .attr("transform", "translate(-10,0)rotate(-45)")
+                .style("text-anchor", "end");
+
+            const y = d3.scaleLinear()
+                .domain([0, d3.max(data, d => d.amount) * 1.1])
+                .range([height, 0]);
+
+            svg.append("g")
+                .call(d3.axisLeft(y).tickFormat(d => "S/ " + d3.format(",.0f")(d)));
+
+            svg.selectAll("mybar")
+                .data(data)
+                .enter()
+                .append("rect")
+                .attr("x", d => x(d.date.toLocaleDateString('es-ES', { day: '2-digit', month: '2-digit' })))
+                .attr("y", d => y(d.amount))
+                .attr("width", x.bandwidth())
+                .attr("height", d => height - y(d.amount))
+                .attr("fill", "#6a11cb");
+
+            // Añadir etiquetas de valor en las barras
+            svg.selectAll(".bar-label")
+                .data(data)
+                .enter()
+                .append("text")
+                .attr("class", "bar-label")
+                .attr("x", d => x(d.date.toLocaleDateString('es-ES', { day: '2-digit', month: '2-digit' })) + x.bandwidth() / 2)
+                .attr("y", d => y(d.amount) - 5)
+                .attr("text-anchor", "middle")
+                .style("font-size", "10px")
+                .style("fill", "#333")
+                .text(d => "S/ " + d3.format(",.0f")(d.amount));
+        }
+
+        // Función para dibujar el gráfico de ventas mensuales (Barras)
+        function drawMonthlySalesChart() {
+            const data = Object.entries(monthlySalesData).map(([month, amount]) => ({
+                month: parseInt(month),
+                amount: amount
+            }));
+
+            // Ordenar por mes
+            data.sort((a, b) => a.month - b.month);
+
+            // Si no hay datos, mostrar mensaje de referencia
+            if (data.length === 0 || data.every(d => d.amount === 0)) {
+                const container = d3.select("#monthlySalesChart");
+                container.attr("viewBox", "0 0 400 300");
+                
+                // Mostrar imagen de ejemplo
+                container.append("image")
+                    .attr("href", "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 400 300'%3E%3Crect width='400' height='300' fill='%23f0f0f0'/%3E%3Ctext x='200' y='150' text-anchor='middle' font-size='16' fill='%23666'%3ENo hay datos de ventas mensuales%3C/text%3E%3C/svg%3E")
+                    .attr("width", 400)
+                    .attr("height", 300);
+                return;
+            }
+
+            const monthNames = ["Ene", "Feb", "Mar", "Abr", "May", "Jun", "Jul", "Ago", "Sep", "Oct", "Nov", "Dic"];
+
+            const margin = { top: 20, right: 30, bottom: 40, left: 50 };
+            const width = document.getElementById('monthlySalesChart').clientWidth - margin.left - margin.right;
+            const height = document.getElementById('monthlySalesChart').clientHeight - margin.top - margin.bottom;
+
+            const svg = d3.select("#monthlySalesChart")
+                .attr("viewBox", `0 0 ${width + margin.left + margin.right} ${height + margin.top + margin.bottom}`)
+                .append("g")
+                .attr("transform", `translate(${margin.left},${margin.top})`);
+
+            const x = d3.scaleBand()
+                .range([0, width])
+                .domain(data.map(d => monthNames[d.month - 1]))
+                .padding(0.2);
+
+            svg.append("g")
+                .attr("transform", `translate(0,${height})`)
+                .call(d3.axisBottom(x));
+
+            const y = d3.scaleLinear()
+                .domain([0, d3.max(data, d => d.amount) * 1.1])
+                .range([height, 0]);
+
+            svg.append("g")
+                .call(d3.axisLeft(y).tickFormat(d => "S/ " + d3.format(",.0f")(d)));
+
+            svg.selectAll("mybar")
+                .data(data)
+                .enter()
+                .append("rect")
+                .attr("x", d => x(monthNames[d.month - 1]))
+                .attr("y", d => y(d.amount))
+                .attr("width", x.bandwidth())
+                .attr("height", d => height - y(d.amount))
+                .attr("fill", "#2575fc");
+
+            // Añadir etiquetas de valor en las barras
+            svg.selectAll(".bar-label")
+                .data(data)
+                .enter()
+                .append("text")
+                .attr("class", "bar-label")
+                .attr("x", d => x(monthNames[d.month - 1]) + x.bandwidth() / 2)
+                .attr("y", d => y(d.amount) - 5)
+                .attr("text-anchor", "middle")
+                .style("font-size", "10px")
+                .style("fill", "#333")
+                .text(d => "S/ " + d3.format(",.0f")(d.amount));
+        }
+
+        // Función para dibujar el gráfico de productos más vendidos (Pie Chart)
+        function drawMostSoldProductsChart() {
+            const data = mostSoldProductsData; // Ya viene formateado del controlador
+
+            if (data.length === 0) {
+                const width = document.getElementById('mostSoldProductsChart').clientWidth;
+                const height = document.getElementById('mostSoldProductsChart').clientHeight;
+                
+                const svg = d3.select("#mostSoldProductsChart")
+                    .attr("viewBox", `0 0 ${width} ${height}`);
+                
+                svg.append("rect")
+                    .attr("width", width)
+                    .attr("height", height)
+                    .attr("fill", "#f0f0f0");
+                
+                svg.append("text")
+                    .attr("x", width / 2)
+                    .attr("y", height / 2)
+                    .attr("text-anchor", "middle")
+                    .attr("dy", ".3em")
+                    .style("font-size", "16px")
+                    .style("fill", "#666")
+                    .text("No hay datos de productos más vendidos");
+                return;
+            }
+
+            const width = document.getElementById('mostSoldProductsChart').clientWidth;
+            const height = document.getElementById('mostSoldProductsChart').clientHeight;
+            const radius = Math.min(width, height) / 2 - 20;
+
+            const svg = d3.select("#mostSoldProductsChart")
+                .attr("viewBox", `0 0 ${width} ${height}`)
+                .append("g")
+                .attr("transform", `translate(${width / 2},${height / 2})`);
+
+            const color = d3.scaleOrdinal(d3.schemeCategory10);
+
+            const pie = d3.pie()
+                .sort(null)
+                .value(d => d.cantidadVendida);
+
+            const arc = d3.arc()
+                .innerRadius(0)
+                .outerRadius(radius);
+
+            const arcs = svg.selectAll(".arc")
+                .data(pie(data))
+                .enter()
+                .append("g")
+                .attr("class", "arc");
+
+            arcs.append("path")
+                .attr("d", arc)
+                .attr("fill", d => color(d.data.nombreProducto))
+                .attr("stroke", "white")
+                .style("stroke-width", "2px");
+
+            arcs.append("text")
+                .attr("transform", d => `translate(${arc.centroid(d)})`)
+                .attr("text-anchor", "middle")
+                .style("font-size", "12px")
+                .style("fill", "white")
+                .text(d => d.data.nombreProducto + " (" + d.data.cantidadVendida + ")");
+
+            // Leyenda
+            const legend = svg.selectAll(".legend")
+                .data(color.domain())
+                .enter()
+                .append("g")
+                .attr("class", "legend")
+                .attr("transform", (d, i) => `translate(${radius + 20}, ${i * 20 - radius + 20})`); // Ajusta la posición
+
+            legend.append("rect")
+                .attr("width", 18)
+                .attr("height", 18)
+                .attr("fill", color);
+
+            legend.append("text")
+                .attr("x", 24)
+                .attr("y", 9)
+                .attr("dy", ".35em")
+                .style("text-anchor", "start")
+                .style("font-size", "12px")
+                .text(d => d);
+        }
+
+
+        // Dibujar todos los gráficos al cargar la página
+        window.onload = function() {
+            drawDailySalesChart();
+            drawMonthlySalesChart();
+            drawMostSoldProductsChart();
+        };
+
+        // Redibujar gráficos si la ventana cambia de tamaño (responsivo)
+        window.addEventListener('resize', () => {
+            d3.select("#dailySalesChart").selectAll("*").remove();
+            d3.select("#monthlySalesChart").selectAll("*").remove();
+            d3.select("#mostSoldProductsChart").selectAll("*").remove();
+            drawDailySalesChart();
+            drawMonthlySalesChart();
+            drawMostSoldProductsChart();
+        });
+        /*]]>*/
+    </script>
 </body>
 </html>
