@@ -1,6 +1,11 @@
 # 🛒 PlazaChina - Plataforma de E-Commerce
 
-Una aplicación web completa de e-commerce construida con **Spring Boot 3.5.0** que permite gestionar productos, carrito de compras, usuarios y pagos integrados con múltiples pasarelas de pago.
+![Java](https://img.shields.io/badge/Java-21-orange?logo=java&logoColor=white)
+![Spring Boot](https://img.shields.io/badge/Spring%20Boot-4.0.1-green?logo=spring-boot&logoColor=white)
+![Maven](https://img.shields.io/badge/Maven-3.6%2B-C71A36?logo=apache-maven&logoColor=white)
+![JavaScript](https://img.shields.io/badge/JavaScript-ES6%2B-yellow?logo=javascript&logoColor=white)
+
+Una aplicación web completa de e-commerce construida con **Spring Boot 4.0.0** que permite gestionar productos, carrito de compras, usuarios y pagos integrados con múltiples pasarelas de pago.
 
 ---
 
