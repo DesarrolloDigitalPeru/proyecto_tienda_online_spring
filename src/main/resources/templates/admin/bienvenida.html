@@ -114,17 +114,17 @@
 
     <script th:inline="javascript">
         /*<![CDATA[*/
-        // Datos para gráficos
+        // Datos para gráficos - Ahora el controlador envía JSON válido con LocalDate convertidas a String
         const dailySalesData = /*[[${salesByDay}]]*/ {};
         const monthlySalesData = /*[[${salesByMonth}]]*/ {};
         const mostSoldProductsData = /*[[${mostSoldProducts}]]*/ [];
 
         // Función para dibujar el gráfico de ventas diarias (Barras)
         function drawDailySalesChart() {
-            const data = Object.entries(dailySalesData).map(([date, amount]) => ({
+            const data = dailySalesData && Object.keys(dailySalesData).length > 0 ? Object.entries(dailySalesData).map(([date, amount]) => ({
                 date: new Date(date),
-                amount: amount
-            }));
+                amount: Number(amount) || 0
+            })) : [];
 
             // Si no hay datos, mostrar mensaje de referencia
             if (true) {
@@ -211,10 +211,10 @@
 
         // Función para dibujar el gráfico de ventas mensuales (Barras)
         function drawMonthlySalesChart() {
-            const data = Object.entries(monthlySalesData).map(([month, amount]) => ({
+            const data = monthlySalesData && Object.keys(monthlySalesData).length > 0 ? Object.entries(monthlySalesData).map(([month, amount]) => ({
                 month: parseInt(month),
-                amount: amount
-            }));
+                amount: Number(amount) || 0
+            })) : [];
 
             // Ordenar por mes
             data.sort((a, b) => a.month - b.month);
@@ -285,9 +285,9 @@
 
         // Función para dibujar el gráfico de productos más vendidos (Pie Chart)
         function drawMostSoldProductsChart() {
-            const data = mostSoldProductsData; // Ya viene formateado del controlador
+            const data = Array.isArray(mostSoldProductsData) && mostSoldProductsData.length > 0 ? mostSoldProductsData : [];
 
-            if (data.length === 0) {
+            if (!data || data.length === 0) {
                 const width = document.getElementById('mostSoldProductsChart').clientWidth;
                 const height = document.getElementById('mostSoldProductsChart').clientHeight;
                 

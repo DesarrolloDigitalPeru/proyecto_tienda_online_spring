@@ -37,7 +37,10 @@ public class AdminController {
         // Gráfico de Ventas Diarias (últimos 7 días)
         LocalDate endDate = LocalDate.now();
         LocalDate startDate = endDate.minusDays(6); // Últimos 7 días incluyendo hoy
-        Map<LocalDate, BigDecimal> salesByDay = pagoService.getTotalSalesByDay(startDate, endDate);
+        Map<LocalDate, BigDecimal> salesByDayRaw = pagoService.getTotalSalesByDay(startDate, endDate);
+        // Convertir LocalDate a String para que sea JSON-compatible
+        Map<String, BigDecimal> salesByDay = new java.util.LinkedHashMap<>();
+        salesByDayRaw.forEach((date, amount) -> salesByDay.put(date.toString(), amount));
         model.addAttribute("salesByDay", salesByDay);
 
         // Gráfico de Ventas Mensuales (año actual)
