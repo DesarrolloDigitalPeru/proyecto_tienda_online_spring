@@ -33,3 +33,23 @@ jobs:
             echo "❌ Error: No se creó el directorio target"
             exit 1
           fi
+    # 📌 PUNTO 3: Ejecutar pruebas automáticas
+    - name: Ejecutar pruebas con Maven
+      run: mvn test 
+    # Paso adicional: Publicar resultados de pruebas (opcional pero útil)
+    - name: Publicar resultados de pruebas
+      if: always()  # Se ejecuta incluso si las pruebas fallan
+      uses: actions/upload-artifact@v4
+      with:
+          name: test-results
+          path: target/surefire-reports/
+      # Paso adicional: Verificar que las pruebas pasaron
+    - name: Verificar pruebas
+      run: |
+          if [ -d "target/surefire-reports" ]; then
+            echo "✅ Pruebas ejecutadas - Reportes generados"
+            echo "📊 Resumen de pruebas:"
+            find target/surefire-reports -name "*.txt" -exec cat {} \; || true
+          else
+            echo "⚠️ No se encontraron reportes de pruebas"
+          fi
