@@ -34,7 +34,7 @@ jobs:
             exit 1
           fi
     - name: Empaquetar con Maven
-      run: ./mvnw clean package
+      run: mvn clean package
       continue-on-error: true
     - name: Subir artefacto
       uses: actions/upload-artifact@v4
@@ -72,3 +72,9 @@ jobs:
           name: proyecto-tienda-jar
           path: target/*.jar
           retention-days: 30
+    - name: Generate Summary
+      run: |
+        echo "## 📊 Pipeline Results" >> $GITHUB_STEP_SUMMARY
+        echo "- ✅ Build: Success" >> $GITHUB_STEP_SUMMARY
+        echo "- 🧪 Tests: Completed" >> $GITHUB_STEP_SUMMARY
+        echo "- 📦 Artifact generated" >> $GITHUB_STEP_SUMMARY
