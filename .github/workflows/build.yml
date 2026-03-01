@@ -115,12 +115,16 @@ jobs:
           echo "✅ Imagen Docker construida exitosamente"
           echo "========================================="
     
+    # =========================================
+    # PUNTO 2: VALIDAR DOCKER-COMPOSE (CORREGIDO CON SOLUCIÓN 3)
+    # =========================================
     - name: Validar docker-compose.yml
       run: |
           echo "========================================="
           echo "PUNTO 2: VALIDAR DOCKER-COMPOSE"
           echo "========================================="
           
+          # Verificar que docker-compose.yml existe
           if [ -f "docker-compose.yml" ]; then
             echo "✅ docker-compose.yml encontrado"
           else
@@ -128,27 +132,47 @@ jobs:
             exit 1
           fi
           
-          echo "Validando sintaxis..."
-          docker-compose config || {
+          # DETECCIÓN AUTOMÁTICA DE COMANDO DISPONIBLE
+          echo "Verificando comando disponible..."
+          if command -v docker-compose &> /dev/null; then
+            COMPOSE_CMD="docker-compose"
+            echo "✅ Usando: docker-compose (tradicional)"
+            $COMPOSE_CMD --version
+          elif docker compose version &> /dev/null; then
+            COMPOSE_CMD="docker compose"
+            echo "✅ Usando: docker compose (plugin)"
+            $COMPOSE_CMD version
+          else
+            echo "❌ ERROR: No se encontró ningún comando de Docker Compose"
+            exit 1
+          fi
+          
+          # Validar sintaxis
+          echo -e "\nValidando sintaxis..."
+          $COMPOSE_CMD config || {
             echo "❌ Error en sintaxis de docker-compose.yml"
             exit 1
           }
           echo "✅ Sintaxis válida"
           
-          echo "Servicios definidos:"
-          docker-compose config --services
+          # Verificar servicios definidos
+          echo -e "\nServicios definidos:"
+          $COMPOSE_CMD config --services
           
-          if docker-compose config --services | grep -q "mysql"; then
+          # Validar servicios críticos
+          echo -e "\nValidando servicios críticos..."
+          if $COMPOSE_CMD config --services | grep -q "mysql"; then
             echo "✅ Servicio 'mysql' encontrado"
           else
             echo "⚠️ Servicio 'mysql' no encontrado"
           fi
           
-          if docker-compose config --services | grep -q "app"; then
+          if $COMPOSE_CMD config --services | grep -q "app"; then
             echo "✅ Servicio 'app' encontrado"
           else
             echo "⚠️ Servicio 'app' no encontrado"
           fi
+          
           echo "========================================="
 
     # S4 - 3: VALIDAR VARIABLES DE ENTORNO
@@ -226,6 +250,39 @@ jobs:
           path: proyecto-tienda-*.tar.gz
           retention-days: 30
     
+    # S4 - 5: VALIDAR DESPLIEGUE
+    - name: Validar script de despliegue
+      if: github.ref == 'refs/heads/main'
+      run: |
+          echo "========================================="
+          echo "PUNTO 5: VALIDAR DESPLIEGUE"
+          echo "========================================="
+          
+          # Verificar que existen los scripts de despliegue
+          if [ -f "scripts/deploy.sh" ]; then
+            echo "✅ scripts/deploy.sh encontrado"
+            chmod +x scripts/deploy.sh
+          else
+            echo "❌ scripts/deploy.sh no encontrado"
+            exit 1
+          fi
+          
+          if [ -f "scripts/verify-deploy.sh" ]; then
+            echo "✅ scripts/verify-deploy.sh encontrado"
+            chmod +x scripts/verify-deploy.sh
+          else
+            echo "❌ scripts/verify-deploy.sh no encontrado"
+            exit 1
+          fi
+          
+          # Verificar sintaxis de los scripts
+          echo "Verificando sintaxis de scripts..."
+          bash -n scripts/deploy.sh || exit 1
+          bash -n scripts/verify-deploy.sh || exit 1
+          echo "✅ Sintaxis de scripts válida"
+          
+          echo "========================================="
+
     # EMPAQUETAR Y SUBIR
     - name: Empaquetar aplicación
       run: mvn package -DskipTests
