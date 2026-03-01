@@ -21,12 +21,19 @@ jobs:
         distribution: 'temurin'
         cache: maven
 
+    # S4 - 1: INSTALAR DOCKER COMPOSE
     - name: Instalar Docker Compose
       run: |
-        sudo apt-get update
-        sudo apt-get install -y docker-compose
-        docker-compose --version
+          echo "========================================="
+          echo "INSTALANDO DOCKER-COMPOSE"
+          echo "========================================="
+          sudo apt-get update
+          sudo apt-get install -y docker-compose
+          docker-compose --version
+          echo "✅ Docker Compose instalado correctamente"
+          echo "========================================="
 
+    # PASOS DE COMPILACIÓN Y EMPAQUETADO
     - name: Compilar con Maven
       run: mvn clean compile
 
@@ -51,7 +58,7 @@ jobs:
         path: target/*.jar
       continue-on-error: true
 
-    # PUNTO 4: Análisis de calidad con SonarCloud
+    # ANÁLISIS DE CALIDAD
     - name: Analizar con SonarCloud
       env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -61,10 +68,8 @@ jobs:
           echo "Repositorio: proyecto_tienda_online_spring"
           echo "Evento: ${{ github.event_name }}"
           
-          # Verificar que el token existe
           if [ -z "$SONAR_TOKEN" ]; then
             echo "ERROR: SONAR_TOKEN no está configurado"
-            echo "Ve a Settings > Secrets and variables > Actions y crea SONAR_TOKEN"
             exit 1
           fi
           mvn verify sonar:sonar \
@@ -73,14 +78,13 @@ jobs:
             -Dsonar.host.url=https://sonarcloud.io \
             -Dsonar.login=${{ secrets.SONAR_TOKEN }}
 
-    # Validar Dockerfile 
+    # S4 - 2: VALIDACIONES DE DOCKER 
     - name: Validar Dockerfile
       run: |
           echo "========================================="
           echo "PUNTO 1: VALIDAR DOCKERFILE"
           echo "========================================="
           
-          # Verificar que Dockerfile existe
           if [ -f "Dockerfile" ]; then
             echo "✅ Dockerfile encontrado"
           else
@@ -92,39 +96,31 @@ jobs:
             echo "✅ Dockerfile creado automáticamente"
           fi
           
-          # Verificar sintaxis del Dockerfile
           echo "Verificando sintaxis del Dockerfile..."
           docker build -t test-validate --no-cache --quiet . || exit 1
           echo "✅ Sintaxis del Dockerfile válida"
-          
           echo "========================================="
 
-    # Construir imagen Docker
     - name: Construir imagen Docker
       run: |
           echo "========================================="
           echo "CONSTRUYENDO IMAGEN DOCKER"
           echo "========================================="
           
-          # Construir imagen con tag del commit
           docker build -t proyecto-tienda:${{ github.sha }} .
           docker build -t proyecto-tienda:latest .
           
-          # Mostrar imágenes creadas
           echo "Imágenes creadas:"
           docker images | grep proyecto-tienda
-          
           echo "✅ Imagen Docker construida exitosamente"
           echo "========================================="
     
-    # Validar docker-compose.yml
     - name: Validar docker-compose.yml
       run: |
           echo "========================================="
           echo "PUNTO 2: VALIDAR DOCKER-COMPOSE"
           echo "========================================="
           
-          # Verificar que docker-compose.yml existe
           if [ -f "docker-compose.yml" ]; then
             echo "✅ docker-compose.yml encontrado"
           else
@@ -132,25 +128,36 @@ jobs:
             exit 1
           fi
           
-          # Validar sintaxis
           echo "Validando sintaxis..."
-          docker-compose config || exit 1
+          docker-compose config || {
+            echo "❌ Error en sintaxis de docker-compose.yml"
+            exit 1
+          }
           echo "✅ Sintaxis válida"
           
-          # Verificar servicios definidos
           echo "Servicios definidos:"
           docker-compose config --services
           
+          if docker-compose config --services | grep -q "mysql"; then
+            echo "✅ Servicio 'mysql' encontrado"
+          else
+            echo "⚠️ Servicio 'mysql' no encontrado"
+          fi
+          
+          if docker-compose config --services | grep -q "app"; then
+            echo "✅ Servicio 'app' encontrado"
+          else
+            echo "⚠️ Servicio 'app' no encontrado"
+          fi
           echo "========================================="
 
-    # Validar variables de entorno
+    # S4 - 3: VALIDAR VARIABLES DE ENTORNO
     - name: Validar variables de entorno
       run: |
           echo "========================================="
           echo "PUNTO 3: VALIDAR VARIABLES DE ENTORNO"
           echo "========================================="
           
-          # Verificar que .env.example existe
           if [ -f ".env.example" ]; then
             echo "✅ .env.example encontrado"
           else
@@ -158,20 +165,68 @@ jobs:
             exit 1
           fi
           
-          # Mostrar configuración esperada
           echo "Configuración esperada:"
           echo "  Base de datos: tiendaplazachina"
           echo "  Usuario: root"
           echo "  Password: (vacío)"
           
-          # Verificar que el archivo contiene la configuración correcta
           if grep -q "tiendaplazachina" .env.example; then
             echo "✅ Nombre BD correcto en .env.example"
           else
             echo "❌ Nombre BD incorrecto en .env.example"
           fi
+          echo "========================================="
+    
+    # S4 - 4: CONSTRUIR IMÁGENES DE LA APLICACIÓN
+    - name: Construir imágenes Docker (Punto 4)
+      run: |
+          echo "========================================="
+          echo "PUNTO 4: CONSTRUIR IMÁGENES DE LA APLICACIÓN"
+          echo "========================================="
           
-          echo "========================================="          
+          # Fecha para tags
+          DATE_TAG=$(date +%Y%m%d)
+          VERSION="1.0.0"
+          
+          # Construir imagen con múltiples tags
+          echo "1. Construyendo imagen con múltiples tags..."
+          docker build -t proyecto-tienda:${{ github.sha }} \
+                       -t proyecto-tienda:latest \
+                       -t proyecto-tienda:${DATE_TAG} \
+                       -t proyecto-tienda:${VERSION} \
+                       .
+          
+          # Listar imágenes creadas
+          echo -e "\n2. Imágenes creadas:"
+          docker images | grep proyecto-tienda
+          
+          # Verificar tamaño de imagen
+          echo -e "\n3. Verificando tamaño de imagen..."
+          SIZE=$(docker inspect proyecto-tienda:latest | grep -m1 "Size" | cut -d ':' -f2 | tr -d ' ,')
+          SIZE_MB=$((SIZE / 1024 / 1024))
+          echo "Tamaño de imagen: ${SIZE_MB}MB"
+          
+          if [ $SIZE_MB -gt 500 ]; then
+            echo "⚠️ Advertencia: La imagen es grande (>500MB)"
+          else
+            echo "✅ Tamaño de imagen óptimo"
+          fi
+          
+          # Guardar imagen como artefacto
+          echo -e "\n4. Guardando imagen como artefacto..."
+          docker save proyecto-tienda:latest | gzip > proyecto-tienda-${DATE_TAG}.tar.gz
+          echo "✅ Imagen guardada: proyecto-tienda-${DATE_TAG}.tar.gz"
+          
+          echo "========================================="
+          
+    - name: Subir imagen Docker como artefacto
+      uses: actions/upload-artifact@v4
+      with:
+          name: docker-image
+          path: proyecto-tienda-*.tar.gz
+          retention-days: 30
+    
+    # EMPAQUETAR Y SUBIR
     - name: Empaquetar aplicación
       run: mvn package -DskipTests
       
