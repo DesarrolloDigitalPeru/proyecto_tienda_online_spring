@@ -21,18 +21,6 @@ jobs:
         distribution: 'temurin'
         cache: maven
 
-    # S4 - 1: INSTALAR DOCKER COMPOSE
-    - name: Instalar Docker Compose
-      run: |
-          echo "========================================="
-          echo "INSTALANDO DOCKER-COMPOSE"
-          echo "========================================="
-          sudo apt-get update
-          sudo apt-get install -y docker-compose
-          docker-compose --version
-          echo "✅ Docker Compose instalado correctamente"
-          echo "========================================="
-
     # PASOS DE COMPILACIÓN Y EMPAQUETADO
     - name: Compilar con Maven
       run: mvn clean compile
@@ -115,9 +103,7 @@ jobs:
           echo "✅ Imagen Docker construida exitosamente"
           echo "========================================="
     
-    # =========================================
-    # PUNTO 2: VALIDAR DOCKER-COMPOSE (CORREGIDO CON SOLUCIÓN 3)
-    # =========================================
+    # VALIDAR DOCKER-COMPOSE
     - name: Validar docker-compose.yml
       run: |
           echo "========================================="
@@ -132,24 +118,17 @@ jobs:
             exit 1
           fi
           
-          # DETECCIÓN AUTOMÁTICA DE COMANDO DISPONIBLE
-          echo "Verificando comando disponible..."
-          if command -v docker-compose &> /dev/null; then
-            COMPOSE_CMD="docker-compose"
-            echo "✅ Usando: docker-compose (tradicional)"
-            $COMPOSE_CMD --version
-          elif docker compose version &> /dev/null; then
-            COMPOSE_CMD="docker compose"
-            echo "✅ Usando: docker compose (plugin)"
-            $COMPOSE_CMD version
-          else
-            echo "❌ ERROR: No se encontró ningún comando de Docker Compose"
+          # Verificar que docker compose plugin está disponible
+          if ! docker compose version &> /dev/null; then
+            echo "❌ ERROR: docker compose no está disponible"
             exit 1
           fi
           
+          echo "✅ Usando: $(docker compose version)"
+          
           # Validar sintaxis
           echo -e "\nValidando sintaxis..."
-          $COMPOSE_CMD config || {
+          docker compose config || {
             echo "❌ Error en sintaxis de docker-compose.yml"
             exit 1
           }
@@ -157,17 +136,17 @@ jobs:
           
           # Verificar servicios definidos
           echo -e "\nServicios definidos:"
-          $COMPOSE_CMD config --services
+          docker compose config --services
           
           # Validar servicios críticos
           echo -e "\nValidando servicios críticos..."
-          if $COMPOSE_CMD config --services | grep -q "mysql"; then
+          if docker compose config --services | grep -q "mysql"; then
             echo "✅ Servicio 'mysql' encontrado"
           else
             echo "⚠️ Servicio 'mysql' no encontrado"
           fi
           
-          if $COMPOSE_CMD config --services | grep -q "app"; then
+          if docker compose config --services | grep -q "app"; then
             echo "✅ Servicio 'app' encontrado"
           else
             echo "⚠️ Servicio 'app' no encontrado"
