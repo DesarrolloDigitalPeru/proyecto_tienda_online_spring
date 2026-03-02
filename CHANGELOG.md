@@ -42,3 +42,15 @@ Crea `CHANGELOG.md`:
 - Estructura base del proyecto
 - Dependencias de Spring Boot
 - Configuración inicial
+## [1.0.0] - 2026-03-01
+### Sprint 4 - Contenedores y Despliegue ✅
+#### Completado
+- ✅ Todos los puntos del Sprint 4 completados
+- ✅ Release v1.0.0 preparado
+- ✅ Documentación finalizada
+- ✅ Sprint cerrado oficialmente
+
+#### Artefactos
+- Release package: `release/proyecto-tienda-1.0.0.tar.gz`
+- Reporte de cierre: `SPRINT4-COMPLETED.md`
+- Resumen ejecutivo: `SPRINT4-SUMMARY.md`

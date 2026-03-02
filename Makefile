@@ -128,3 +128,31 @@ punto9: release verify-release release-notes ## Ejecuta todo el proceso de relea
 	@echo "${GREEN}✅ Punto 9 completado${NC}"
 	@echo "Release disponible en: release/"
 	@ls -la release/
+
+# Sprint closing commands
+close-sprint: ## Cierra el Sprint 4 (Punto 10)
+	@echo "${YELLOW}Ejecutando close-sprint.sh...${NC}"
+	@./scripts/close-sprint.sh
+
+final-verify: ## Verificación final del sprint
+	@echo "${YELLOW}Ejecutando final-verification.sh...${NC}"
+	@./scripts/final-verification.sh
+
+# Comando combinado para punto 10
+punto10: close-sprint final-verify ## Ejecuta todo el cierre del sprint
+	@echo "${GREEN}✅ Punto 10 completado${NC}"
+	@echo "${GREEN}✅ SPRINT 4 COMPLETADO EXITOSAMENTE${NC}"
+
+# Comando para ver todo el sprint
+sprint-complete: ## Muestra el estado completo del Sprint 4
+	@echo "${BLUE}=========================================${NC}"
+	@echo "${GREEN}SPRINT 4 - ESTADO COMPLETO${NC}"
+	@echo "${BLUE}=========================================${NC}"
+	@echo "📁 Puntos: 10/10 completados"
+	@echo "📦 Release: v1.0.0"
+	@echo "📊 Reporte: SPRINT4-COMPLETED.md"
+	@echo "📋 Resumen: SPRINT4-SUMMARY.md"
+	@echo "${BLUE}=========================================${NC}"
+	@cat SPRINT4-SUMMARY.md | head -10
+	@echo "..."
+	@echo "${BLUE}=========================================${NC}"
