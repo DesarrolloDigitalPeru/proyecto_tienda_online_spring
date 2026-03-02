@@ -283,6 +283,62 @@ jobs:
           
           echo "========================================="
 
+    # S4 - 6: VALIDAR PUERTOS Y SERVICIOS
+    - name: Validar configuración de puertos
+      run: |
+          echo "========================================="
+          echo "PUNTO 6: VALIDAR PUERTOS Y SERVICIOS"
+          echo "========================================="
+          
+          # Verificar scripts
+          if [ -f "scripts/validate-ports.sh" ]; then
+            echo "✅ validate-ports.sh encontrado"
+            chmod +x scripts/validate-ports.sh
+          else
+            echo "❌ validate-ports.sh no encontrado"
+            exit 1
+          fi
+          
+          # Verificar configuración en docker-compose.yml
+          echo "Verificando mapeo de puertos en docker-compose.yml..."
+          
+          # App: 8081:8080
+          if grep -q "8081:8080" docker-compose.yml; then
+            echo "✅ Puerto app: 8081 → 8080"
+          else
+            echo "❌ Puerto app incorrecto"
+          fi
+          
+          # MySQL: 3307:3306
+          if grep -q "3307:3306" docker-compose.yml; then
+            echo "✅ Puerto mysql: 3307 → 3306"
+          else
+            echo "❌ Puerto mysql incorrecto"
+          fi
+          
+          # phpMyAdmin: 8082:80
+          if grep -q "8082:80" docker-compose.yml; then
+            echo "✅ Puerto phpmyadmin: 8082 → 80"
+          else
+            echo "❌ Puerto phpmyadmin incorrecto"
+          fi
+          
+          # Verificar red
+          if grep -q "networks:" docker-compose.yml; then
+            echo "✅ Red configurada"
+          else
+            echo "❌ Red no configurada"
+          fi
+          
+          # Verificar depends_on
+          if grep -q "depends_on:" docker-compose.yml; then
+            echo "✅ Dependencias configuradas"
+          else
+            echo "❌ Dependencias no configuradas"
+          fi
+          
+          echo "========================================="
+
     # EMPAQUETAR Y SUBIR
     - name: Empaquetar aplicación
       run: mvn package -DskipTests

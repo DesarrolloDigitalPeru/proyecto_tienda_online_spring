@@ -52,3 +52,21 @@ status: ## Muestra estado de los servicios
 down: ## Detiene todos los servicios
 	@echo "${YELLOW}Deteniendo servicios...${NC}"
 	@docker-compose down
+
+# Agregar al Makefile existente
+
+validate-ports: ## Valida configuración de puertos
+	@echo "${YELLOW}Ejecutando validate-ports.sh...${NC}"
+	@./scripts/validate-ports.sh
+
+test-connectivity: ## Prueba conectividad entre servicios
+	@echo "${YELLOW}Ejecutando test-connectivity.sh...${NC}"
+	@./scripts/test-connectivity.sh
+
+port-diagnostic: ## Diagnóstico completo de puertos
+	@echo "${YELLOW}Ejecutando port-diagnostic.sh...${NC}"
+	@./scripts/port-diagnostic.sh
+
+# Comando combinado para punto 6
+punto6: validate-ports test-connectivity port-diagnostic ## Ejecuta todas las validaciones del punto 6
+	@echo "${GREEN}✅ Punto 6 completado${NC}"
