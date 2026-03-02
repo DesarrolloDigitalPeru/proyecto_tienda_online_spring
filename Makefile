@@ -82,3 +82,30 @@ status-report: ## Genera reporte de estado del sistema
 # Comando combinado para punto 7
 punto7: validate-system health-check status-report ## Ejecuta todas las validaciones del punto 7
 	@echo "${GREEN}✅ Punto 7 completado${NC}"
+
+# Documentación
+docs: ## Abre la documentación en el navegador
+	@echo "${YELLOW}Documentación disponible:${NC}"
+	@echo "  📄 DEPLOYMENT.md - Guía de despliegue"
+	@echo "  📄 API.md - Documentación de API"
+	@echo "  📄 README.md - Información general"
+	@echo "  📄 CHANGELOG.md - Historial de cambios"
+	@if command -v open >/dev/null 2>&1; then \
+		open DEPLOYMENT.md; \
+	elif command -v xdg-open >/dev/null 2>&1; then \
+		xdg-open DEPLOYMENT.md; \
+	else \
+		echo "Abre manualmente los archivos MD"; \
+	fi
+
+# Comando combinado para punto 8
+punto8: ## Genera y verifica toda la documentación
+	@echo "${YELLOW}Verificando documentación...${NC}"
+	@if [ -f "DEPLOYMENT.md" ] && [ -f "API.md" ] && [ -f "README.md" ] && [ -f "CHANGELOG.md" ]; then \
+		echo "${GREEN}✅ Toda la documentación existe${NC}"; \
+		wc -l DEPLOYMENT.md API.md README.md CHANGELOG.md | grep -v total; \
+		echo "${GREEN}✅ Punto 8 completado${NC}"; \
+	else \
+		echo "${RED}❌ Falta documentación${NC}"; \
+		exit 1; \
+	fi
