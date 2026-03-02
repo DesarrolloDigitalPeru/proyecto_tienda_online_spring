@@ -404,6 +404,35 @@ jobs:
           echo -e "\n✅ Documentación validada correctamente"
           echo "========================================="
 
+    # S4 - 9: VALIDAR PREPARACIÓN DE VERSIÓN FINAL
+    - name: Validar scripts de release
+      run: |
+          echo "========================================="
+          echo "PUNTO 9: VALIDAR SCRIPTS DE RELEASE"
+          echo "========================================="
+          
+          # Verificar scripts de release
+          RELEASE_SCRIPTS=("release-version.sh" "verify-release.sh" "release-notes.sh")
+          
+          for script in "${RELEASE_SCRIPTS[@]}"; do
+            if [ -f "scripts/$script" ]; then
+              echo "✅ scripts/$script encontrado"
+              chmod +x "scripts/$script"
+            else
+              echo "❌ scripts/$script no encontrado"
+              exit 1
+            fi
+          done
+          
+          # Verificar sintaxis
+          echo "Verificando sintaxis de scripts..."
+          for script in "${RELEASE_SCRIPTS[@]}"; do
+            bash -n "scripts/$script" || exit 1
+            echo "  ✅ $script sintaxis válida"
+          done
+          
+          echo "========================================="
+
     # EMPAQUETAR Y SUBIR
     - name: Empaquetar aplicación
       run: mvn package -DskipTests

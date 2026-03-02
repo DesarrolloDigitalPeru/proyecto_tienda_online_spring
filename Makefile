@@ -109,3 +109,22 @@ punto8: ## Genera y verifica toda la documentación
 		echo "${RED}❌ Falta documentación${NC}"; \
 		exit 1; \
 	fi
+
+	# Release commands
+release: ## Prepara versión final (Punto 9)
+	@echo "${YELLOW}Ejecutando release-version.sh...${NC}"
+	@./scripts/release-version.sh
+
+verify-release: ## Verifica el release generado
+	@echo "${YELLOW}Ejecutando verify-release.sh...${NC}"
+	@./scripts/verify-release.sh
+
+release-notes: ## Genera notas de release
+	@echo "${YELLOW}Ejecutando release-notes.sh...${NC}"
+	@./scripts/release-notes.sh
+
+# Comando combinado para punto 9
+punto9: release verify-release release-notes ## Ejecuta todo el proceso de release
+	@echo "${GREEN}✅ Punto 9 completado${NC}"
+	@echo "Release disponible en: release/"
+	@ls -la release/
