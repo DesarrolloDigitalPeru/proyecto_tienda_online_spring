@@ -25,8 +25,6 @@ analyze: ## Analiza tamaño y capas de la imagen
 all: build test analyze ## Ejecuta build, test y analyze
 	@echo "${GREEN}✅ Proceso completo finalizado${NC}"
 
-# Agregar al Makefile existente
-
 deploy: ## Despliega la aplicación con validaciones
 	@echo "${YELLOW}Ejecutando deploy.sh...${NC}"
 	@./scripts/deploy.sh
@@ -53,8 +51,6 @@ down: ## Detiene todos los servicios
 	@echo "${YELLOW}Deteniendo servicios...${NC}"
 	@docker-compose down
 
-# Agregar al Makefile existente
-
 validate-ports: ## Valida configuración de puertos
 	@echo "${YELLOW}Ejecutando validate-ports.sh...${NC}"
 	@./scripts/validate-ports.sh
@@ -70,3 +66,19 @@ port-diagnostic: ## Diagnóstico completo de puertos
 # Comando combinado para punto 6
 punto6: validate-ports test-connectivity port-diagnostic ## Ejecuta todas las validaciones del punto 6
 	@echo "${GREEN}✅ Punto 6 completado${NC}"
+
+validate-system: ## Valida ejecución completa del sistema
+	@echo "${YELLOW}Ejecutando validate-system.sh...${NC}"
+	@./scripts/validate-system.sh
+
+health-check: ## Health check detallado de servicios
+	@echo "${YELLOW}Ejecutando health-check.sh...${NC}"
+	@./scripts/health-check.sh
+
+status-report: ## Genera reporte de estado del sistema
+	@echo "${YELLOW}Ejecutando status-report.sh...${NC}"
+	@./scripts/status-report.sh
+
+# Comando combinado para punto 7
+punto7: validate-system health-check status-report ## Ejecuta todas las validaciones del punto 7
+	@echo "${GREEN}✅ Punto 7 completado${NC}"
