@@ -339,6 +339,35 @@ jobs:
           
           echo "========================================="
 
+    # S4 - 7: VALIDAR EJECUCIÓN DEL SISTEMA
+    - name: Validar scripts de sistema
+      run: |
+          echo "========================================="
+          echo "PUNTO 7: VALIDAR EJECUCIÓN DEL SISTEMA"
+          echo "========================================="
+          
+          # Verificar que existen los scripts
+          SCRIPTS=("validate-system.sh" "health-check.sh" "status-report.sh")
+          
+          for script in "${SCRIPTS[@]}"; do
+            if [ -f "scripts/$script" ]; then
+              echo "✅ scripts/$script encontrado"
+              chmod +x "scripts/$script"
+            else
+              echo "❌ scripts/$script no encontrado"
+              exit 1
+            fi
+          done
+          
+          # Verificar sintaxis de los scripts
+          echo "Verificando sintaxis de scripts..."
+          for script in "${SCRIPTS[@]}"; do
+            bash -n "scripts/$script" || exit 1
+            echo "  ✅ $script sintaxis válida"
+          done
+          
+          echo "========================================="
+
     # EMPAQUETAR Y SUBIR
     - name: Empaquetar aplicación
       run: mvn package -DskipTests
