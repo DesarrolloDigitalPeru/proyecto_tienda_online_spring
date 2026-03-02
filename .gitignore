@@ -36,6 +36,7 @@ build/
 .env
 .env.local
 .env.production
-!.env.example*.tar.gz
 
 *.tar.gz
+
+release/
