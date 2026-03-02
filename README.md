@@ -1,3 +1,37 @@
+## 🐳 Despliegue con Docker
+
+El proyecto está completamente containerizado para facilitar su despliegue en cualquier entorno.
+
+### Requisitos para Docker
+- **Docker** 20.10+
+- **Docker Compose** 2.0+
+
+### Servicios Dockerizados
+
+| Servicio | Puerto Host | Puerto Contenedor | Descripción |
+|----------|-------------|-------------------|-------------|
+| App Spring Boot | 8081 | 8080 | Aplicación principal |
+| MySQL | 3307 | 3306 | Base de datos |
+| phpMyAdmin | 8082 | 80 | Administración BD |
+
+### Inicio Rápido con Docker
+
+```bash
+# 1. Clonar el repositorio
+git clone <tu-repositorio>
+cd proyecto
+
+# 2. Configurar variables de entorno
+cp .env.example .env
+# Editar .env si es necesario (por defecto funciona con root sin contraseña)
+
+# 3. Desplegar con un solo comando
+./scripts/deploy.sh
+# o usando make
+make deploy
+
+# 4. Acceder a la aplicación
+http://localhost:8081
 # 🛒 PlazaChina - Plataforma de E-Commerce
 
 ![Java](https://img.shields.io/badge/Java-21-orange?logo=java&logoColor=white)

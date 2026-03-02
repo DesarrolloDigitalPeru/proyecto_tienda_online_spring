@@ -368,6 +368,42 @@ jobs:
           
           echo "========================================="
 
+    # S4 - 8: VALIDAR DOCUMENTACIÓN
+    - name: Validar documentación de despliegue
+      run: |
+          echo "========================================="
+          echo "PUNTO 8: VALIDAR DOCUMENTACIÓN"
+          echo "========================================="
+          
+          # Verificar archivos de documentación
+          DOC_FILES=("DEPLOYMENT.md" "README.md" "CHANGELOG.md" "API.md")
+          
+          echo "Verificando archivos de documentación:"
+          for file in "${DOC_FILES[@]}"; do
+            if [ -f "$file" ]; then
+              SIZE=$(wc -l < "$file")
+              echo "  ✅ $file ($(wc -l < "$file") líneas)"
+            else
+              echo "  ❌ $file no encontrado"
+              exit 1
+            fi
+          done
+          
+          # Verificar contenido mínimo en DEPLOYMENT.md
+          echo -e "\nVerificando secciones en DEPLOYMENT.md:"
+          SECTIONS=("Requisitos" "Despliegue" "Verificación" "Solución de Problemas")
+          
+          for section in "${SECTIONS[@]}"; do
+            if grep -q "$section" DEPLOYMENT.md; then
+              echo "  ✅ Sección '$section' encontrada"
+            else
+              echo "  ❌ Sección '$section' no encontrada"
+            fi
+          done
+          
+          echo -e "\n✅ Documentación validada correctamente"
+          echo "========================================="
+
     # EMPAQUETAR Y SUBIR
     - name: Empaquetar aplicación
       run: mvn package -DskipTests
